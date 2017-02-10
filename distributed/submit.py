@@ -12,6 +12,7 @@ from tornado import gen
 from tornado.ioloop import IOLoop
 
 from distributed import rpc
+from distributed.cli.utils import create_ssl_context
 from distributed.compatibility import unicode
 from distributed.core import Server
 from distributed.utils import get_ip
@@ -62,13 +63,16 @@ class RemoteClient(Server):
         self.stop()
 
 
-def _remote(host, port, loop=IOLoop.current(), client=RemoteClient):
+def _remote(host, port, loop=IOLoop.current(), client=RemoteClient, certfile=None, keyfile=None):
     host = host or get_ip()
     if ':' in host and port == 8788:
         host, port = host.rsplit(':', 1)
         port = int(port)
     ip = socket.gethostbyname(host)
-    remote_client = client(ip=ip, loop=loop)
+
+    ssl_ctx = create_ssl_context(certfile, keyfile)
+
+    remote_client = client(ip=ip, loop=loop, ssl_options=ssl_ctx)
     remote_client.start(port=port)
     loop.start()
     loop.close()

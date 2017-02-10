@@ -159,7 +159,10 @@ class ZMQ(Comm):
 class ZMQConnector(object):
 
     @gen.coroutine
-    def _do_connect(self, sock, address, listener_url, deserialize=True):
+    def _do_connect(self, sock, address, listener_url, deserialize=True, ssl_options=None):
+        if ssl_options is not None:
+            logger.warning("ZMQ does not support ssl at present.")
+
         sock.connect(listener_url)
 
         req = {'op': 'zmq-connect'}
@@ -187,7 +190,7 @@ class ZMQConnector(object):
 
 class ZMQListener(Listener):
 
-    def __init__(self, address, comm_handler, deserialize=True, default_port=0):
+    def __init__(self, address, comm_handler, deserialize=True, default_port=0, ssl_options=None):
         self.ip, self.port = parse_host_port(address, default_port)
         self.comm_handler = comm_handler
         self.deserialize = deserialize
@@ -195,6 +198,8 @@ class ZMQListener(Listener):
         self.bound_host = None
         self.bound_port = None
         self.please_stop = False
+        if ssl_options is not None:
+            logger.warning("ZMQ does not support ssl at present.")
 
     def start(self):
         self.sock = make_socket(zmq.ROUTER)

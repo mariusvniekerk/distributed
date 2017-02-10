@@ -212,13 +212,13 @@ class TCP(Comm):
 class TCPConnector(object):
 
     @gen.coroutine
-    def connect(self, address, deserialize=True):
+    def connect(self, address, deserialize=True, ssl_options=None):
         ip, port = parse_host_port(address)
 
         client = TCPClient()
         try:
             stream = yield client.connect(ip, port,
-                                          max_buffer_size=MAX_BUFFER_SIZE)
+                                          max_buffer_size=MAX_BUFFER_SIZE, ssl_options=ssl_options)
         except StreamClosedError as e:
             # The socket connect() call failed
             convert_stream_closed_error(e)
@@ -228,15 +228,16 @@ class TCPConnector(object):
 
 class TCPListener(Listener):
 
-    def __init__(self, address, comm_handler, deserialize=True, default_port=0):
+    def __init__(self, address, comm_handler, deserialize=True, default_port=0, ssl_options=None):
         self.ip, self.port = parse_host_port(address, default_port)
         self.comm_handler = comm_handler
         self.deserialize = deserialize
         self.tcp_server = None
         self.bound_address = None
+        self.ssl_options = ssl_options
 
     def start(self):
-        self.tcp_server = TCPServer(max_buffer_size=MAX_BUFFER_SIZE)
+        self.tcp_server = TCPServer(max_buffer_size=MAX_BUFFER_SIZE, ssl_options=self.ssl_options)
         self.tcp_server.handle_stream = self.handle_stream
         for i in range(5):
             try:

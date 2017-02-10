@@ -85,7 +85,7 @@ class Server(object):
     default_port = 0
 
     def __init__(self, handlers, connection_limit=512, deserialize=True,
-                 io_loop=None):
+                 io_loop=None, ssl_options=None):
         self.handlers = assoc(handlers, 'identity', self.identity)
         self.id = str(uuid.uuid1())
         self._address = None
@@ -101,6 +101,8 @@ class Server(object):
 
         self.listener = None
         self.io_loop = io_loop or IOLoop.current()
+
+        self.ssl_options = ssl_options
 
         if hasattr(self, 'loop'):
             # XXX?
@@ -177,7 +179,8 @@ class Server(object):
             addr = port_or_addr
             assert isinstance(addr, string_types)
         self.listener = listen(addr, self.handle_comm,
-                               deserialize=self.deserialize)
+                               deserialize=self.deserialize,
+                               ssl_options=self.ssl_options)
         self.listener.start()
 
     @gen.coroutine
