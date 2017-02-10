@@ -13,8 +13,8 @@ from distributed.submit import _remote
               help='path to certfile to use for ssl connection')
 @click.option('--keyfile', default=None,
               help='path to keyfile to use for ssl connection')
-def main(host, port, cerfile, keyfile):
-    _remote(host, port, certfile=cerfile, keyfile=keyfile)
+def main(host, port, certfile, keyfile):
+    _remote(host, port, certfile=certfile, keyfile=keyfile)
 
 
 def go():
