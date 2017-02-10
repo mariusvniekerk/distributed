@@ -343,7 +343,7 @@ class Client(object):
     distributed.scheduler.Scheduler: Internal scheduler
     """
     def __init__(self, address=None, start=True, loop=None, timeout=3,
-                 set_as_default=True, scheduler_file=None):
+                 set_as_default=True, scheduler_file=None, ssl_options=None):
         self.futures = dict()
         self.refcount = defaultdict(lambda: 0)
         self._should_close_loop = loop is None and start
@@ -355,6 +355,7 @@ class Client(object):
         self._pending_msg_buffer = []
         self.extensions = {}
         self.scheduler_file = scheduler_file
+        self.ssl_options = ssl_options
 
         if hasattr(address, "scheduler_address"):
             # It's a LocalCluster or LocalCluster-compatible object
@@ -495,7 +496,7 @@ class Client(object):
             return
 
         comm = yield connect(self.scheduler.address,
-                             timeout=timeout)
+                             timeout=timeout, ssl_options=self.ssl_options)
 
         yield self.scheduler.identity()
 
