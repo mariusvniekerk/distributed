@@ -71,8 +71,9 @@ def _remote(host, port, loop=IOLoop.current(), client=RemoteClient, certfile=Non
     ip = socket.gethostbyname(host)
 
     ssl_ctx = create_ssl_context(certfile, keyfile)
+    connection_kwargs = dict(ssl_options=ssl_ctx)
 
-    remote_client = client(ip=ip, loop=loop, ssl_options=ssl_ctx)
+    remote_client = client(ip=ip, loop=loop, connection_kwargs=connection_kwargs)
     remote_client.start(port=port)
     loop.start()
     loop.close()
@@ -81,8 +82,8 @@ def _remote(host, port, loop=IOLoop.current(), client=RemoteClient, certfile=Non
 
 
 @gen.coroutine
-def _submit(remote_client_address, filepath):
-    rc = rpc(remote_client_address)
+def _submit(remote_client_address, filepath, connection_kwargs=None):
+    rc = rpc(remote_client_address, connection_kwargs=connection_kwargs)
     remote_file = os.path.basename(filepath)
     with open(filepath, 'rb') as f:
         bytes_read = f.read()

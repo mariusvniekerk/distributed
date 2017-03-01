@@ -158,11 +158,12 @@ def main(scheduler, host, worker_port, http_port, nanny_port, nthreads, nprocs,
                          "dask-worker SCHEDULER_ADDRESS:8786")
 
     ssl_ctx = create_ssl_context(certfile, keyfile)
+    connection_kwargs = dict(ssl_options=ssl_ctx)
 
     nannies = [t(scheduler, ncores=nthreads,
                  services=services, name=name, loop=loop, resources=resources,
                  memory_limit=memory_limit, reconnect=reconnect,
-                 local_dir=local_directory, ssl_options=ssl_ctx, **kwargs)
+                 local_dir=local_directory, connection_kwargs=connection_kwargs, **kwargs)
                for i in range(nprocs)]
 
     for n in nannies:
@@ -204,7 +205,7 @@ def main(scheduler, host, worker_port, http_port, nanny_port, nthreads, nprocs,
 
     @gen.coroutine
     def f():
-        scheduler = rpc(nannies[0].scheduler.address)
+        scheduler = rpc(nannies[0].scheduler.address, connection_kwargs=connection_kwargs)
         if nanny:
             yield gen.with_timeout(timedelta(seconds=2),
                     All([scheduler.unregister(address=n.worker_address, close=True)

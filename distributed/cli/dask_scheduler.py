@@ -76,8 +76,9 @@ def main(host, port, http_port, bokeh_port, bokeh_internal_port, show, _bokeh,
             services[('bokeh', bokeh_internal_port)] = BokehScheduler
 
     ssl_ctx = create_ssl_context(certfile, keyfile)
+    connection_kwargs = dict(ssl_options=ssl_ctx)
 
-    scheduler = Scheduler(loop=loop, services=services, ssl_options=ssl_ctx, scheduler_file=scheduler_file)
+    scheduler = Scheduler(loop=loop, services=services, connection_kwargs=connection_kwargs, scheduler_file=scheduler_file)
     scheduler.start(addr)
 
     bokeh_proc = None

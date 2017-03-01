@@ -133,7 +133,7 @@ class Listener(with_metaclass(ABCMeta)):
 
 
 @gen.coroutine
-def connect(addr, timeout=3, deserialize=True, ssl_options=None):
+def connect(addr, timeout=3, deserialize=True, connection_kwargs=None):
     """
     Connect to the given address (a URI such as ``tcp://127.0.0.1:1234``)
     and yield a ``Comm`` object.  If the connection attempt fails, it is
@@ -156,7 +156,7 @@ def connect(addr, timeout=3, deserialize=True, ssl_options=None):
 
     while True:
         try:
-            future = connector.connect(loc, deserialize=deserialize, ssl_options=ssl_options)
+            future = connector.connect(loc, deserialize=deserialize, connection_kwargs=connection_kwargs)
             comm = yield gen.with_timeout(timedelta(seconds=deadline - time()),
                                           future,
                                           quiet_exceptions=EnvironmentError)
@@ -175,7 +175,7 @@ def connect(addr, timeout=3, deserialize=True, ssl_options=None):
     raise gen.Return(comm)
 
 
-def listen(addr, handle_comm, deserialize=True, ssl_options=None):
+def listen(addr, handle_comm, deserialize=True, connection_kwargs=None):
     """
     Create a listener object with the given parameters.  When its ``start()``
     method is called, the listener will listen on the given address
@@ -189,4 +189,4 @@ def listen(addr, handle_comm, deserialize=True, ssl_options=None):
     if listener_class is None:
         raise ValueError("unknown scheme %r in address %r" % (scheme, addr))
 
-    return listener_class(loc, handle_comm, deserialize, ssl_options=ssl_options)
+    return listener_class(loc, handle_comm, deserialize, connection_kwargs=connection_kwargs)

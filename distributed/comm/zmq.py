@@ -159,11 +159,10 @@ class ZMQ(Comm):
 class ZMQConnector(object):
 
     @gen.coroutine
-    def _do_connect(self, sock, address, listener_url, deserialize=True, ssl_options=None):
-        if ssl_options is not None:
-            logger.warning("ZMQ does not support ssl at present.")
+    def _do_connect(self, sock, address, listener_url, deserialize=True, connection_kwargs=None):
+        connection_kwargs = connection_kwargs or {}
 
-        sock.connect(listener_url)
+        sock.connect(listener_url, **connection_kwargs)
 
         req = {'op': 'zmq-connect'}
         yield sock.send_multipart(to_frames(req))
@@ -190,7 +189,7 @@ class ZMQConnector(object):
 
 class ZMQListener(Listener):
 
-    def __init__(self, address, comm_handler, deserialize=True, default_port=0, ssl_options=None):
+    def __init__(self, address, comm_handler, deserialize=True, default_port=0, connection_kwargs=None):
         self.ip, self.port = parse_host_port(address, default_port)
         self.comm_handler = comm_handler
         self.deserialize = deserialize
@@ -198,8 +197,7 @@ class ZMQListener(Listener):
         self.bound_host = None
         self.bound_port = None
         self.please_stop = False
-        if ssl_options is not None:
-            logger.warning("ZMQ does not support ssl at present.")
+        self.connection_kwargs = connection_kwargs or {}
 
     def start(self):
         self.sock = make_socket(zmq.ROUTER)
@@ -257,7 +255,7 @@ class ZMQListener(Listener):
         """
         The listening address as a string.
         """
-        return 'zmq://'+ unparse_host_port(*self.get_host_port())
+        return 'zmq://' + unparse_host_port(*self.get_host_port())
 
     @property
     def contact_address(self):
