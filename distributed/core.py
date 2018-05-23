@@ -351,7 +351,7 @@ class Server(object):
         try:
             while not closed:
                 msgs = yield comm.read()
-                if not isinstance(msgs, list):
+                if not isinstance(msgs, (list, tuple)):
                     msgs = [msgs]
 
                 if not comm.closed():
